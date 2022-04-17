@@ -1,0 +1,66 @@
+diff --git a/lib/usermgt.js b/lib/usermgt.js
+index 458192c..d355d51 100755
+--- a/lib/usermgt.js
++++ b/lib/usermgt.js
+@@ -276,6 +276,15 @@ class UserMGT {
+         });
+     }
+
++    saveSync() {
++        let json = JSON.stringify(this.data);
++        try {
++            fs.writeFileSync(this.filename, json);
++        } catch(e) {
++            throw("Can't write to user data file: " + e)
++        }
++    }
++
+     generateRandomPassword(pwdlength=PWD_LENGTH) {
+         let randombuffer = crypto.randomBytes(pwdlength)
+         let randompwd = ""
+diff --git a/package-lock.json b/package-lock.json
+index df62977..4b4986e 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -10,6 +10,7 @@
+         "minimist": "^1.2.5",
+         "nodemailer": "^6.6.0",
+         "sharp": "^0.26.3",
++        "signal-exit": "^3.0.3",
+         "utf-8-validate": "^5.0.3",
+         "validator": "^13.1.17",
+         "ws": "^7.4.0"
+diff --git a/package.json b/package.json
+index 9e79b65..be47b16 100644
+--- a/package.json
++++ b/package.json
+@@ -5,6 +5,7 @@
+     "minimist": "^1.2.5",
+     "nodemailer": "^6.6.0",
+     "sharp": "^0.26.3",
++    "signal-exit": "^3.0.3",
+     "utf-8-validate": "^5.0.3",
+     "validator": "^13.1.17",
+     "ws": "^7.4.0"
+diff --git a/server.js b/server.js
+index 3a7f6a3..1a13955 100755
+--- a/server.js
++++ b/server.js
+@@ -16,6 +16,7 @@ const usermgt = new UserMGT(
+     config.diagrams.path,
+ );
+ const fs = require('fs');
++const onExit = require('signal-exit');
+
+ function sendMail(to, subject, content) {
+     console.log(`Sending email to queue: ${to} : ${subject}`)
+@@ -599,6 +600,9 @@ function main() {
+     ws.initialize(config, usermgt, html, sendmail);
+
+     const server = new httpServer(config.use_ssl_socket, config.socket.address, config.socket.port, config.socket.cert, config.socket.key, HTTP_callback, ws.WS_callback);
++    onExit((code, signal) => {
++        usermgt.saveSync();
++    });
+ }
+
+ main()

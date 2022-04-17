@@ -1,0 +1,54 @@
+texture upload fails.
+
+`this.data.user[this.data.session[sessionid].user].textures` is undefined
+
+```
+POST /upload/texture HOST:127.0.0.1:3000 USER AGENT:Mozilla/5.0 ...
+Ready
+{
+  format: 'png',
+  size: 21141,
+  width: 420,
+  height: 420,
+  space: 'srgb',
+  channels: 4,
+  depth: 'uchar',
+  density: 144,
+  isProgressive: false,
+  hasProfile: false,
+  hasAlpha: true
+}
+/work/networkmaps/lib/usermgt.js:2099
+                    this.data.user[this.data.session[sessionid].user].textures[digest] = {"name": filename};
+                                                                                       ^
+```
+
+diff --git a/lib/usermgt.js b/lib/usermgt.js
+index 458192c..f11ca5d 100755
+--- a/lib/usermgt.js
++++ b/lib/usermgt.js
+@@ -433,6 +433,7 @@ class UserMGT {
+                 activation_code: null,
+                 activation_date: null,
+                 diagrams: [],
++                textures: {},
+                 mark_delete: false,
+             }
+         }
+@@ -753,6 +754,7 @@ class UserMGT {
+                         activation_code: null,
+                         activation_date: null,
+                         diagrams: [],
++                        textures: {},
+                         mark_delete: false,
+                     }
+                 }
+@@ -2260,6 +2262,8 @@ class UserMGT {
+             activation_code: null,
+             activation_date: Date.now() + 1000 * 3600*24,
+             diagrams: [],
++            textures: {},
++            mark_delete: false,
+         };
+         callback(null);
+     }
